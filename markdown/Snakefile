@@ -1,0 +1,95 @@
+"""
+Author: Thomas Sandmann
+Aim: RNA-seq processing workflow to QC and map single-end RNA-Seq data
+Date: July 16th, 2019
+Run: snakemake --dryrun --cores 8 2>&1 | tee snake.log
+"""
+
+SAMPLES, = glob_wildcards("reads/{prefix}.fastq.gz")
+# SAMPLES = SAMPLES[0:2]
+
+SPECIES = "mouse"
+REFDIR = "references"
+FRAGMENT_LENGTH = 200
+FRAGMENT_SD = 100
+
+rule all:
+    input: ["multiqc_report.html"]
+
+rule fastqc:
+    input: "reads/{prefix}.fastq.gz"
+    output:
+        qc = "qc/{prefix}_fastqc.zip"
+    params:
+        outdir = "qc/",
+    threads: 1
+    shell:
+        """
+        fastqc \
+            -o {params.outdir} \
+  	        -t {threads} \
+	        {input}
+        """
+
+rule skewer:
+    input: "reads/{prefix}.fastq.gz"
+    output:
+        fq = "trimmed/{prefix}-trimmed.fastq.gz"
+    threads: 8
+    params:
+        outdir = "trimmed/",
+    shell:
+        """
+        mkdir -p {params.outdir}
+        skewer \
+        --quiet \
+        -l 35 \
+        -z \
+        -x {REFDIR}/adapters.fa \
+        -t {threads} \
+        -o {params.outdir}/{wildcards.prefix} \
+        {input}
+        """
+
+rule salmon:
+    input:
+        fq = "trimmed/{prefix}-trimmed.fastq.gz"
+    output:
+        quant = "quantitation/{prefix}/quant.sf",
+    params:
+        outdir = "quantitation/{prefix}",
+    threads: 8
+    shell:
+        """
+        mkdir -p {params.outdir}
+        salmon quant \
+            -i {REFDIR}/{SPECIES}/salmon_index \
+            -l A \
+            --fldMean {FRAGMENT_LENGTH} \
+            --fldSD {FRAGMENT_SD} \
+            -r {input.fq} \
+            -p 8 \
+            --validateMappings \
+            -o {params.outdir} 2>&1 | tee \
+            {params.outdir}/salmon.log
+         """
+
+rule multiqc:
+    input: 
+        skewer = expand("trimmed/{prefix}-trimmed.fastq.gz", prefix=SAMPLES),
+        salmon = expand("quantitation/{prefix}/quant.sf", prefix=SAMPLES),
+        fastqc = expand("qc/{prefix}_fastqc.zip", prefix=SAMPLES)
+    output:
+        report = "multiqc_report.html",
+        data = "multiqc_data.zip",
+    threads: 1
+    params:
+        directories = ["qc", "quantitation", "trimmed"]
+    shell:
+        """
+        multiqc \
+            -z \
+            --force \
+            --cl_config "extra_fn_clean_exts: ['-trimmed']" \
+            {params.directories}
+        """
