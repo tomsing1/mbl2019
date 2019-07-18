@@ -252,12 +252,12 @@ colnames(efit)
 ```
 
 ```{r}
-dt <- decideTests(efit, adjust.method = "fdr", p.value = "0.05", lfc = 0)
+dt <- decideTests(efit, adjust.method = "fdr", p.value = 0.05, lfc = 0)
 summary(dt)
 ```
 
 ```{r}
-dt <- decideTests(efit, adjust.method = "fdr", p.value = "0.05", lfc = 1)
+dt <- decideTests(efit, adjust.method = "fdr", p.value = 0.05, lfc = 1)
 summary(dt)
 ```
 
@@ -298,6 +298,10 @@ write.fit(efit, dt, file="results.txt")
 
 ## MA plots for different comparisons
 
+```{r}
+dt <- decideTests(efit, adjust.method = "fdr", p.value = 0.05, lfc = 0)
+```
+
 ```{r fig.width=5, fig.height=4}
 comparison <- "g1_vs_g2"
 plotMD(efit, column=comparison, status=dt[, comparison],
@@ -311,9 +315,16 @@ plotMD(efit, column=comparison, status=dt[, comparison],
 ```
 
 ```{r eval=FALSE}
-glMDPlot(efit, coef=comparison, status=dt, main=comparison,
-         side.main="symbol", counts=lcpm, groups=v$targets$animal_number, 
-         launch=TRUE)
+comparison <- "g7_vs_g8"
+glMDPlot(
+  x = efit,
+  coef=comparison, 
+  status=dt[row.names(v), comparison],
+  main=comparison,
+  side.main="symbol", 
+  counts=v$E, 
+  groups=v$targets$animal_number, 
+  launch=TRUE)
 ```
 
 # Heatmaps
