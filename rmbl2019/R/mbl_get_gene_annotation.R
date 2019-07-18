@@ -12,7 +12,9 @@ mbl_get_transcript_annotation <- function(
   url <-paste0("https://s3.amazonaws.com/mbl.data/references/%s/",
                "gene_annotations.txt.gz")
   ti <- readr::read_tsv(sprintf(url, organism), col_types = readr::cols())
-  colnames(ti) <- c("gene_id", "transcript.id", "gene_type", "symbol")
+  colnames(ti) <- c("gene_id", "transcript_id", "gene_type", "symbol")[
+    seq.int(ncol(ti))
+  ]
   # rownames(ti) <- ti$target_id
   return(ti)
 }

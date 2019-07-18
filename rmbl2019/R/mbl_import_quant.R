@@ -17,10 +17,11 @@ mbl_import_quantitation_results <- function(
   checkmate::assert_directory(path)
 
   files <- dir(path, pattern = "quant.sf", recursive = TRUE, full.names = TRUE)
-  names(files) <- str_match(files, pattern = ".*/(.*)_S\\d*_.*/quant.sf")[, 2]
+  names(files) <- stringr::str_match(
+    string = files,
+    pattern = ".*/(.*)_S\\d*_.*/quant.sf")[, 2]
 
   gene_anno <- mbl_get_transcript_annotation(organism)
-  colnames(gene_anno) <- c("gene_id", "transcript_id", "gene_type", "symbol")
   tx2gene <- gene_anno[, c("transcript_id", "gene_id")]
 
   txi <- tximport(

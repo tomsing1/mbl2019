@@ -2,6 +2,7 @@
 
 export(mbl_get_transcript_annotation)
 export(mbl_import_quantitation_results)
+export(mbl_load_data)
 importFrom(checkmate,assert_directory)
 importFrom(edgeR,DGEList)
 importFrom(readr,cols)

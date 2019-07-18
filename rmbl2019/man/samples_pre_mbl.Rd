@@ -4,7 +4,7 @@
 \name{samples_pre_mbl}
 \alias{samples_pre_mbl}
 \title{Sample annotations for pre-MBL samples}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 357 rows and 8 columns.}
+\format{An object of class \code{data.frame} with 355 rows and 8 columns.}
 \usage{
 samples_pre_mbl
 }
