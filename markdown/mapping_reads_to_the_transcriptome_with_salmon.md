@@ -44,7 +44,8 @@ Let's download the transcript sequences for the mouse:
 ```
 mkdir -p ~/analysis/references/mouse
 cd ~/analysis/references/mouse
-wget ftp://ftp.ensembl.org/pub/release-92/fasta/mus_musculus/cdna/Mus_musculus.GRCm38.cdna.all.fa.gz
+wget -O transcripts.fa.gz \
+    ftp://ftp.ensembl.org/pub/release-92/fasta/mus_musculus/cdna/Mus_musculus.GRCm38.cdna.all.fa.gz
 ```
 
 To make the transcriptome suitable for analysis with `salmon`, we first have to index it:
@@ -52,10 +53,10 @@ To make the transcriptome suitable for analysis with `salmon`, we first have to 
 ```
 cd ~/analysis/references/mouse
 salmon index \
-    -p 4 \
+    -p 2 \
     -k 21 \
     --gencode \
-    -t Mus_musculus.GRCm38.cdna.all.fa.gz \
+    -t transcripts.fa.gz \
     -i salmon_index
 ```
 

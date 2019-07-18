@@ -1,6 +1,12 @@
 # Introduction
 
+Work in progres..
 
+# Drawing the graph
+
+```
+snakemake --dag | dot -Tsvg > dag.svg
+```
 
 # Additional material
 

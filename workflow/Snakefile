@@ -10,8 +10,8 @@ SAMPLES, = glob_wildcards("reads/{prefix}.fastq.gz")
 
 SPECIES = "mouse"
 REFDIR = "references"
-FRAGMENT_LENGTH = 200
-FRAGMENT_SD = 100
+FRAGMENT_LENGTH = 180
+FRAGMENT_SD = 70
 
 rule all:
     input: ["multiqc_report.html"]
@@ -25,6 +25,7 @@ rule fastqc:
     threads: 1
     shell:
         """
+        mkdir -p {params.outdir}
         fastqc \
             -o {params.outdir} \
   	        -t {threads} \
