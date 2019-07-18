@@ -1,0 +1,57 @@
+---
+title: "Plotting log2(CPM+1) expression values"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Plotting log2(CPM+1) expression values}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(rmbl2019)
+library(dplyr)
+library(ggplot2)
+theme_set(theme_linedraw(base_size = 14))
+```
+
+```{r}
+y <- mbl_load_data(organism = "mouse", dataset = "pre_mbl")
+cpms <- mbl_create_tidy_table(y, log_transform = TRUE, prior.count = 1)
+```
+
+```{r}
+head(cpms)
+```
+
+```{r}
+gene = "Gapdh"
+cpms %>%
+  filter(symbol == gene) %>%
+  ggplot(aes(x = cell_type, y = cpm)) +
+  geom_boxplot() +
+  geom_point(aes(color = sex)) +
+  scale_color_manual(values = c("female" = "red", "male" = "navy")) +
+  ylab("log2(CPM + 1)") +
+  ggtitle(gene)
+```
+
+```{r}
+gene = "Lrrk2"
+cpms %>%
+  filter(symbol == gene) %>%
+  ggplot(aes(x = cell_type, y = cpm)) +
+  geom_boxplot() +
+  geom_point(aes(color = sex)) +
+  scale_color_manual(values = c("female" = "red", "male" = "navy")) +
+  ylab("log2(CPM + 1)") +
+  ggtitle(gene)
+```

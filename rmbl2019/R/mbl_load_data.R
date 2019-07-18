@@ -3,6 +3,7 @@
 #' @export
 #' @param organism either "mouse", "fly", "planaria", "worm", or "fish"
 #' @param dataset either "prem_mbl" or "mbl"
+#' @importFrom janitor remove_empty
 #' @return a DGElist object
 mbl_load_data <- function(
   organism = c("mouse", "fly", "fish", "planaria", "worm"),
@@ -18,5 +19,6 @@ mbl_load_data <- function(
   s3_url <- sprintf("https://s3.amazonaws.com/mbl.data/dgelists/%s/%s.rds",
                  dataset, organism)
   y <- readRDS(url(s3_url))
+  y$samples <- janitor::remove_empty(y$samples, which="cols")
   return(y)
 }

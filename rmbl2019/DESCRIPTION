@@ -7,14 +7,23 @@ Author: person("Thomas", "Sandmann", email = "sandmann.t@gmail.com",
 Description: This package provides helper functions to access and process
   RNA-seq data generated for the MBL Neurobiology Genomics section in July 2019
 Imports:
-  checkmate,
-  edgeR,
-  limma,
-  readr,
-  stringr,
-  tximport
-Depends:
+    checkmate,
+    dplyr,
+    edgeR,
+    janitor,
+    limma,
+    readr,
+    stringr,
+    tibble,
+    tidyr,
+    tximport,
+    magrittr
 License: Apache 2.0
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1
+Suggests: 
+    ggplot2,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

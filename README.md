@@ -7,6 +7,6 @@ To install the `rmbl2019` R package:
 
 ```r
 library(devtools)
-install_github("tomsing1/mbl2019", subdir = "rmbl2019")
+install_github("tomsing1/mbl2019", subdir = "rmbl2019", build_vignettes = TRUE)
 ```
 
