@@ -29,6 +29,6 @@ mbl_create_tidy_table <- function(y, log_transform = TRUE, prior.count = 1) {
     tidyr::gather(key = "sample_id", value = "cpm", -gene_id) %>%
     dplyr::inner_join(pdata, by = "sample_id") %>%
     dplyr::inner_join(fdata, by = "gene_id") %>%
-    dplyr::select(symbol, gene_id, sample_id, everything())
+    dplyr::select(gene_id, sample_id, everything())
   return(cpms)
 }
