@@ -11,7 +11,8 @@ Imports:
   edgeR,
   limma,
   readr,
-  stringr
+  stringr,
+  tximport
 Depends:
 License: Apache 2.0
 Encoding: UTF-8

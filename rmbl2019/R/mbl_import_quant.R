@@ -7,6 +7,7 @@
 #' @importFrom checkmate assert_directory
 #' @importFrom edgeR DGEList
 #' @importFrom stringr str_match
+#' @importFrom tximport tximport
 mbl_import_quantitation_results <- function(
   path = path.expand("~/analysis/quantitation"),
   organism = c("mouse", "fly", "fish", "planaria", "worm"),

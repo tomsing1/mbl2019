@@ -4,8 +4,10 @@
 \alias{mbl_import_quantitation_results}
 \title{Import salmon quantification results}
 \usage{
-mbl_import_quantitation_results(path, organism = c("mouse", "fly",
-  "fish", "planaria", "worm"), rm.description = TRUE)
+
+  mbl_import_quantitation_results(path = path.expand("~/analysis/quantitation"),
+  organism = c("mouse", "fly", "fish", "planaria", "worm"),
+  rm.description = TRUE)
 }
 \arguments{
 \item{path}{path to folder with quantification results}
