@@ -57,8 +57,8 @@ table(x$genes$gene_type)
 
 ```{r}
 table(x$samples$animal_number)
-x$samples$group <- factor(x$samples$animal_number)
-levels(x$samples$group)
+x$samples$animal_number <- factor(x$samples$animal_number)
+levels(x$samples$animal_number)
 
 our_colors <- setNames(
   brewer.pal(nlevels(x$samples$animal_number), "Set1"),
@@ -110,21 +110,56 @@ dim(x)
 ```{r}
 x <- calcNormFactors(x, method = "TMM")
 x$samples$norm.factors
-lcpm <- cpm(x, log=TRUE)
-lcpm[1:10, 1:10]
+```
+
+```{r}
+cpm(x, log=TRUE, normalized.lib.sizes = TRUE)[1:10, 1:10]
 ```
 
 # Multi-dimensional scaling
 
 ```{r fig.height=5, fig.width=5}
-plotMDS(lcpm, labels=x$samples$sample_name, col = our_colors[levels(x$samples$animal_number)[x$samples$animal_number]])
+plotMDS(cpm(x, log=TRUE, normalized.lib.sizes = TRUE),
+        labels=x$samples$sample_name,
+        col = our_colors[
+          levels(x$samples$animal_number)[x$samples$animal_number]]
+        )
 ```
 
 ```{r eval=FALSE}
-glMDSPlot(lcpm, labels=x$samples$sample_name, 
+glMDSPlot(cpm(x, log=TRUE, normalized.lib.sizes = TRUE),
+          labels=x$samples$sample_name, 
           groups=x$samples$animal_number,
          launch=TRUE)
 ```
+
+## Removing outlier sample
+
+```{r}
+remove_samples <- "g2F"
+x <- x[, !colnames(x) %in% remove_samples]
+```
+
+```{r fig.height=5, fig.width=5}
+plotMDS(cpm(x, log=TRUE, normalized.lib.sizes = TRUE),
+        labels=x$samples$sample_name,
+        col = our_colors[
+          levels(x$samples$animal_number)[x$samples$animal_number]]
+        )
+```
+
+```{r eval=FALSE}
+glMDSPlot(cpm(x, log=TRUE, normalized.lib.sizes = TRUE),
+          labels=x$samples$sample_name, 
+          groups=x$samples$animal_number,
+         launch=TRUE)
+```
+
+```{r}
+lcpm  <-cpm(x, log=TRUE, normalized.lib.sizes = TRUE)
+```
+
+# Linear models of gene expression
 
 ```{r}
 design <- model.matrix(~0 + animal_number, data = x$samples)
@@ -132,11 +167,14 @@ colnames(design) <- gsub("animal_number", "group", colnames(design))
 design
 ```
 
+## Voom transformation
 
 ```{r}
 v <- voom(x, design, plot=TRUE)
 v
 ```
+
+## Model fitting 
 
 ```{r}
 vfit <- lmFit(v, design)
@@ -199,9 +237,10 @@ cpms %>%
 
 ```{r}
 contr.matrix <- makeContrasts(
-   group1_vs_group2 = group1-group2, 
-   group1_vs_group3 = group1-group3, 
-   group1_vs_group4 = group1-group4, 
+   g1_vs_g2 = group1-group2, 
+   g1_vs_g3 = group1-group3, 
+   g1_vs_g4 = group1-group4, 
+   g7_vs_g8 = group7-group8,
    levels = colnames(design))
 contr.matrix
 ```
@@ -223,7 +262,18 @@ summary(dt)
 ```
 
 ```{r}
-topTable(efit, coef = "group1_vs_group2")
+tt <- topTable(efit, coef = "g7_vs_g8", n = Inf)
+head(tt)
+```
+
+```{r}
+tt %>%
+  filter(adj.P.Val < 0.05, logFC > 1) %>%
+  head()
+```
+
+```{r eval=FALSE}
+write.csv(tt, file = "g7_vs_g8.txt")
 ```
 
 ```{r}
@@ -239,7 +289,7 @@ cpms %>%
 ```
 
 ```{r fig.width=8, fig.height=8}
-vennDiagram(dt[,1:3], circle.col=c("turquoise", "salmon", "navy"))
+vennDiagram(dt[, c(1, 2, 4)], circle.col=c("turquoise", "salmon", "navy"))
 ```
 
 ```{r eval=FALSE}
@@ -249,23 +299,29 @@ write.fit(efit, dt, file="results.txt")
 ## MA plots for different comparisons
 
 ```{r fig.width=5, fig.height=4}
-comparison <- colnames(efit)[1]
+comparison <- "g1_vs_g2"
+plotMD(efit, column=comparison, status=dt[, comparison],
+       main=comparison)
+```
+
+```{r fig.width=5, fig.height=4}
+comparison <- "g7_vs_g8"
 plotMD(efit, column=comparison, status=dt[, comparison],
        main=comparison)
 ```
 
 ```{r eval=FALSE}
-glMDPlot(efit, coef=comparison, status=dt, main=colnames(efit)[1],
+glMDPlot(efit, coef=comparison, status=dt, main=comparison,
          side.main="symbol", counts=lcpm, groups=v$targets$animal_number, 
          launch=TRUE)
 ```
 
 # Heatmaps
 
-100 genes DE in group1 versus group2 Expression across each gene (or row) have been scaled so that mean expression is zero and standard deviation is one. Samples with relatively high expression of a given gene are marked in red and samples with relatively low expression are marked in blue. Lighter shades and white represent genes with intermediate expression levels. Samples and genes have been reordered by the method of hierarchical clustering. A dendrogram is shown for the sample clustering.", 
+100 genes DE in group 7 versus group 8 Expression across each gene (or row) have been scaled so that mean expression is zero and standard deviation is one. Samples with relatively high expression of a given gene are marked in red and samples with relatively low expression are marked in blue. Lighter shades and white represent genes with intermediate expression levels. Samples and genes have been reordered by the method of hierarchical clustering. A dendrogram is shown for the sample clustering.", 
 
 ```{r fig.width=8, fig.height=5, fig.cap="Heatmap of log-CPM values}
-topgenes <- topTableF(efit, number = Inf)$gene_id[1:100]
+topgenes <- topTable(efit, coef=comparison, number = Inf)$gene_id[1:100]
 mycol <- colorpanel(1000,"navy","white","firebrick")
 heatmap.2(v$E[topgenes, ], scale="row",
    labCol=v$targets$animal_number, 
