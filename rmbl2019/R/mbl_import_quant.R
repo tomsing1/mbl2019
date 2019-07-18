@@ -30,7 +30,8 @@ mbl_import_quantitation_results <- function(
     countsFromAbundance = "lengthScaledTPM")
 
   genes <- gene_anno[match(row.names(txi$counts), gene_anno$gene_id),
-                     c("gene_id", "gene_type", "symbol")]
+                     intersect(c("gene_id", "gene_type", "symbol"),
+                               colnames(gene_anno))]
 
   # combine gene annotations & counts into a DGEList object
   y <- DGEList(txi$counts, genes = genes)
