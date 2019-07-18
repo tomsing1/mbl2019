@@ -8,7 +8,7 @@
 #' @importFrom edgeR DGEList
 #' @importFrom stringr str_match
 mbl_import_quantitation_results <- function(
-  path,
+  path = path.expand("~/analysis/quantitation"),
   organism = c("mouse", "fly", "fish", "planaria", "worm"),
   rm.description = TRUE) {
   # Ensure user asked for a valid organism
@@ -19,6 +19,7 @@ mbl_import_quantitation_results <- function(
   names(files) <- str_match(files, pattern = ".*/(.*)_S\\d*_.*/quant.sf")[, 2]
 
   gene_anno <- mbl_get_transcript_annotation(organism)
+  colnames(gene_anno) <- c("gene_id", "transcript.id", "gene_type", "symbol")
   tx2gene <- gene_anno[, c("transcript_id", "gene_id")]
 
   txi <- tximport(
