@@ -1,0 +1,282 @@
+---
+title: "Differential expression analysis: C.elegans (pre-MBL)"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Differential expression analysis}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(rmbl2019)
+library(dplyr)
+library(edgeR)
+library(limma)
+library(Glimma)
+library(ggplot2)
+library(RColorBrewer)
+if (!require("statmod")) install.packages("statmod", quiet = TRUE)
+require("statmod")
+if (!require("gplots")) install.packages("gplots", quiet = TRUE)
+require("gplots")
+options(digits=3)
+options(width=90)
+theme_set(theme_linedraw(base_size = 14))
+```
+
+# Introduction
+
+This tutorial is based on the excellent Bioconductor workshop
+[RNA-seq analysis is easy as 1-2-3 with limma, Glimma and edgeR](https://f1000research.com/articles/5-1408/v3)
+
+# Accessing an RNA-seq dataset
+
+The `rmbl2019` R package contains helper functions to access RNA-seq data
+generated before the course started. You can specify the organism you would
+like the data for with the `organism` argument:
+
+```{r}
+x <- mbl_load_data(organism = "worm", dataset = "pre_mbl")
+class(x)
+dim(x)
+head(x$samples)
+head(x$genes)
+table(x$genes$gene_type)
+```
+
+# Sample annotations
+
+```{r}
+table(x$samples$animal_number)
+x$samples$group <- factor(x$samples$animal_number)
+levels(x$samples$group)
+
+our_colors <- setNames(
+  brewer.pal(nlevels(x$samples$animal_number), "Set1"),
+  levels(x$samples$animal_number)
+)
+```
+
+# Filtering protein-coding genes
+
+```{r}
+if ("gene_type" %in% colnames(x$genes)) {
+  protein_coding <- x$genes$gene_type == "protein_coding"
+  x <- x[protein_coding, ]
+}
+```
+
+# Filtering genes with insufficient numbers of counts
+
+Some genes were not dected in any sample, e.g. the sum of the counts is zero
+across all samples:
+
+```{r}
+zero_counts <- rowSums(x$counts)==0
+table(zero_counts)
+```
+
+Here is a distribution of the total number of genes each gene received (across)
+all `r ncol(x)` samples:
+
+```{r}
+hist(log10(rowSums(x[!zero_counts, ]$counts)))
+```
+
+Next, we use a strategy that is commonly used to retain only those genes for
+which we have a realistic chance to detect differential expression at all.
+
+>Roughly speaking, the strategy keeps genes that have at least min.count reads in a worthwhile number samples. More precisely, the filtering keeps genes that have count-per-million (CPM) above k in n samples, where k is determined by min.count and by the sample library sizes and n is determined by the design matrix.
+
+>n is essentially the smallest group sample size or, more precisely, the minimum inverse leverage for any fitted value. If all the group sizes are large, then this is relaxed slightly, but with n always greater than 70% of the smallest group size.
+
+```{r}
+keep.exprs <- filterByExpr(x, group="animal_number")
+table(keep.exprs)
+x <- x[keep.exprs,, keep.lib.sizes=FALSE]
+dim(x)
+```
+
+# Normalization
+```{r}
+x <- calcNormFactors(x, method = "TMM")
+x$samples$norm.factors
+lcpm <- cpm(x, log=TRUE)
+lcpm[1:10, 1:10]
+```
+
+# Multi-dimensional scaling
+
+```{r fig.height=5, fig.width=5}
+plotMDS(lcpm, labels=x$samples$sample_name, col = our_colors[levels(x$samples$animal_number)[x$samples$animal_number]])
+```
+
+```{r eval=FALSE}
+glMDSPlot(lcpm, labels=x$samples$sample_name, 
+          groups=x$samples$animal_number,
+         launch=TRUE)
+```
+
+```{r}
+design <- model.matrix(~0 + animal_number, data = x$samples)
+colnames(design) <- gsub("animal_number", "group", colnames(design))
+design
+```
+
+
+```{r}
+v <- voom(x, design, plot=TRUE)
+v
+```
+
+```{r}
+vfit <- lmFit(v, design)
+efit <- eBayes(vfit)
+colnames(efit)
+plotSA(efit, main="Final model: Mean-variance trend")
+```
+
+```{r}
+topTableF(efit)
+```
+
+## Identifying problems
+
+```{r}
+cpms <- mbl_create_tidy_table(x)
+head(cpms)
+```
+
+```{r}
+gene <- "aap-1"
+cpms %>%
+  filter(symbol == gene) %>%
+  ggplot(aes(x = animal_number, y = cpm)) +
+  ylab("Normalized expression\nLog2(CPM + 1)") +
+  xlab("Group") +
+  geom_boxplot() +
+  geom_point() +
+  ggtitle(gene)
+```
+
+## Using a robust analysis instead
+
+```{r}
+v <- voomWithQualityWeights(x, design, plot=TRUE)
+```
+
+```{r}
+vfit <- lmFit(v, design, method = "robust")
+efit <- eBayes(vfit, robust = TRUE)
+```
+
+```{r}
+topTableF(efit)
+```
+
+```{r}
+gene <- "C17F4.7"
+cpms %>%
+  filter(symbol == gene) %>%
+  ggplot(aes(x = animal_number, y = cpm)) +
+  ylab("Normalized expression\nLog2(CPM + 1)") +
+  xlab("Group") +
+  geom_boxplot() +
+  geom_point() +
+  ggtitle(gene)
+```
+
+# Comparing specific groups of samples
+
+```{r}
+contr.matrix <- makeContrasts(
+   group1_vs_group2 = group1-group2, 
+   group1_vs_group3 = group1-group3, 
+   group1_vs_group4 = group1-group4, 
+   levels = colnames(design))
+contr.matrix
+```
+
+```{r}
+vfit <- contrasts.fit(vfit, contrasts=contr.matrix)
+efit <- eBayes(vfit, robust = TRUE)
+colnames(efit)
+```
+
+```{r}
+dt <- decideTests(efit, adjust.method = "fdr", p.value = "0.05", lfc = 0)
+summary(dt)
+```
+
+```{r}
+dt <- decideTests(efit, adjust.method = "fdr", p.value = "0.05", lfc = 1)
+summary(dt)
+```
+
+```{r}
+topTable(efit, coef = "group1_vs_group2")
+```
+
+```{r}
+gene <- "F48D6.4"
+cpms %>%
+  filter(symbol == gene) %>%
+  ggplot(aes(x = animal_number, y = cpm)) +
+  ylab("Normalized expression\nLog2(CPM + 1)") +
+  xlab("Group") +
+  geom_boxplot() +
+  geom_point() +
+  ggtitle(gene)
+```
+
+```{r fig.width=8, fig.height=8}
+vennDiagram(dt[,1:3], circle.col=c("turquoise", "salmon", "navy"))
+```
+
+```{r eval=FALSE}
+write.fit(efit, dt, file="results.txt")
+```
+
+## MA plots for different comparisons
+
+```{r fig.width=5, fig.height=4}
+comparison <- colnames(efit)[1]
+plotMD(efit, column=comparison, status=dt[, comparison],
+       main=comparison)
+```
+
+```{r eval=FALSE}
+glMDPlot(efit, coef=comparison, status=dt, main=colnames(efit)[1],
+         side.main="symbol", counts=lcpm, groups=v$targets$animal_number, 
+         launch=TRUE)
+```
+
+# Heatmaps
+
+100 genes DE in group1 versus group2 Expression across each gene (or row) have been scaled so that mean expression is zero and standard deviation is one. Samples with relatively high expression of a given gene are marked in red and samples with relatively low expression are marked in blue. Lighter shades and white represent genes with intermediate expression levels. Samples and genes have been reordered by the method of hierarchical clustering. A dendrogram is shown for the sample clustering.", 
+
+```{r fig.width=8, fig.height=5, fig.cap="Heatmap of log-CPM values}
+topgenes <- topTableF(efit, number = Inf)$gene_id[1:100]
+mycol <- colorpanel(1000,"navy","white","firebrick")
+heatmap.2(v$E[topgenes, ], scale="row",
+   labCol=v$targets$animal_number, 
+   labRow = v$genes[topgenes, "symbol"],
+   col=mycol, trace="none", density.info="none", 
+   dendrogram="column")
+```
+
+
+# Session information
+
+```{r}
+sessionInfo()
+```
