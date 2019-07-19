@@ -331,7 +331,7 @@ glMDPlot(
 
 100 genes DE in group 7 versus group 8 Expression across each gene (or row) have been scaled so that mean expression is zero and standard deviation is one. Samples with relatively high expression of a given gene are marked in red and samples with relatively low expression are marked in blue. Lighter shades and white represent genes with intermediate expression levels. Samples and genes have been reordered by the method of hierarchical clustering. A dendrogram is shown for the sample clustering.", 
 
-```{r fig.width=8, fig.height=5, fig.cap="Heatmap of log-CPM values}
+```{r fig.width=8, fig.height=5}
 topgenes <- topTable(efit, coef=comparison, number = Inf)$gene_id[1:10]
 mycol <- colorpanel(1000,"navy","white","firebrick")
 heatmap.2(
