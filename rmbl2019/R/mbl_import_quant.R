@@ -11,15 +11,22 @@
 mbl_import_quantitation_results <- function(
   path = path.expand("~/analysis/quantitation"),
   organism = c("mouse", "fly", "fish", "planaria", "worm"),
+  dataset = c("mbl", "pre_mbl"),
   rm.description = TRUE) {
   # Ensure user asked for a valid organism
   organism <- match.arg(organism)
+  dataset <- match.arg(dataset)
   checkmate::assert_directory(path)
 
+  file_pattern <- switch(
+    dataset,
+    pre_mbl = ".*/(.*)_S\\d*_.*/quant.sf",
+    mbl = ".*/(.*)/quant.sf"
+  )
   files <- dir(path, pattern = "quant.sf", recursive = TRUE, full.names = TRUE)
   names(files) <- stringr::str_match(
     string = files,
-    pattern = ".*/(.*)_S\\d*_.*/quant.sf")[, 2]
+    pattern = file_pattern)[, 2]
 
   gene_anno <- mbl_get_transcript_annotation(organism)
   tx2gene <- gene_anno[, c("transcript_id", "gene_id")]
