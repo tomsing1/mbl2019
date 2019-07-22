@@ -64,3 +64,19 @@ mbl_plot_pca(x, intgroup = "sex")
 
 By default, it considers the top 500 most variable genes (see the `ntop` argument).
 Please refer to the documentation for more details (e.g. `help(mbl_plot_pca)`).
+
+### Tidy CPMs
+
+To facilitate the generation of visualizations with `ggplot2`, the `mbl_create_tidy_table` function
+is provided.
+
+It returns a 
+[tidy](http://vita.had.co.nz/papers/tidy-data.pdf)
+data.frame that contains all gene and sample annotations - alongside the gene expression measurments
+as `counts per million (CPM)`.
+
+By default, the CPMs are log2 transformed after addition of one pseudocount. To 
+learn how to change these parameters, please check the function's help page:
+`r help(mbl_create_tidy_table)`.
+
+
