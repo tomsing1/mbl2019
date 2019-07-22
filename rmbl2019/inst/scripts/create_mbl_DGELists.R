@@ -1,22 +1,22 @@
 # Creating DGELists from libraries generated at MBL
-
 library(purrr)
 library(rmbl2019)
 library(org.Mm.eg.db)  # mouse
 library(org.Ce.eg.db)  # worm
 library(org.Dr.eg.db)  # zebrafish
 library(org.Dm.eg.db)  # fly
-data("samples_pre_mbl")
-row.names(samples_pre_mbl) <- samples_pre_mbl$sample_name
+data("samples_mbl")
+samples_mbl <- as.data.frame(samples_mbl)
+row.names(samples_mbl) <- samples_mbl$sample_name
 
-kUrl <- "s3://mbl.data/quantitation/pre_mbl/%s"
+kUrl <- "s3://mbl.data/quantitation/mbl/%s"
 kAnnotations <- list(
   mouse = "org.Mm.eg.db",
   worm = "org.Ce.eg.db",
   fish = "org.Dr.eg.db",
   fly = "org.Dm.eg.db"
 )
-species_list <- c("mouse", "worm", "planaria", "fly")
+species_list <- c("mouse", "fish", "fly")
 
 add_entrez_ids <- function(dge, species, annotations = kAnnotations) {
   if (species %in% names(annotations)) {
@@ -39,17 +39,19 @@ create_DGElist <- function(species) {
 
   # Create DGElist with gene annotations, but no sample annotations
   y <- mbl_import_quantitation_results(temp_dir, organism = species)
+  colnames(y) <- sub("_R1$", "", colnames(y))
 
   # Add sample annotations
-  not_annotated <- setdiff(colnames(y), samples_pre_mbl$sample_name)
+  not_annotated <- setdiff(colnames(y), samples_mbl$sample_name)
   if (length(not_annotated) > 0) {
     message(sprintf("%s %s samples are not annotated in the sample sheet: %s",
-                    length(not_annotated), species, paste(not_annotated, collapse = ", ")))
+                    length(not_annotated), species, paste(not_annotated,
+                                                          collapse = ", ")))
   }
-  y <- y[, intersect(colnames(y), samples_pre_mbl$sample_name)]
+  y <- y[, intersect(colnames(y), samples_mbl$sample_name)]
   y$samples <- data.frame(
     y$samples,
-    samples_pre_mbl[colnames(y), ]
+    samples_mbl[colnames(y), ]
   )
   row.names(y$samples) <- colnames(y)
   y <- add_entrez_ids(y, species = species, annotations = kAnnotations)
