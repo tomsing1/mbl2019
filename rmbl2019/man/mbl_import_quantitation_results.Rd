@@ -7,7 +7,7 @@
 
   mbl_import_quantitation_results(path = path.expand("~/analysis/quantitation"),
   organism = c("mouse", "fly", "fish", "planaria", "worm"),
-  rm.description = TRUE)
+  dataset = c("mbl", "pre_mbl"), rm.description = TRUE)
 }
 \arguments{
 \item{path}{path to folder with quantification results}

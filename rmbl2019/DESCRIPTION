@@ -1,7 +1,7 @@
 Package: rmbl2019
 Type: Package
 Title: Package with helper functions for the MBL Neurobiology course 2019
-Version: 0.2.0
+Version: 0.2.1
 Author: person("Thomas", "Sandmann", email = "sandmann.t@gmail.com",
                   role = c("aut", "cre"))
 Description: This package provides helper functions to access and process

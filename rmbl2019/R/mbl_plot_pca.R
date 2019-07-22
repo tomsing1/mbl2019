@@ -8,7 +8,7 @@
 #' @return ggplot2 object
 #' @importFrom matrixStats rowVars
 #' @export
-#' @importFrom ggplot2 ggplot geom_point xlab ylab coord_fixed
+#' @importFrom ggplot2 ggplot geom_point xlab ylab coord_fixed aes_string
 #' @note This function was modified from the DESeq2::plotPCA function
 mbl_plot_pca <- function(x, intgroup = NA, prior.count = 5, ntop = 500) {
   cpms <- cpm(x, log = TRUE, prior.count = prior.count)
@@ -31,8 +31,9 @@ mbl_plot_pca <- function(x, intgroup = NA, prior.count = 5, ntop = 500) {
       PC2 = pca$x[, 2],
       group,
       name = colnames(x))
-    p <- ggplot2::ggplot(data = d, aes_string(x = "PC1", y = "PC2",
-                                              color = "group")) +
+    p <- ggplot2::ggplot(data = d,
+                         ggplot2:aes_string(x = "PC1", y = "PC2",
+                                            color = "group")) +
       ggplot2::geom_point(size = 3) +
       ggplot2::xlab(paste0("PC1: ", round(percentVar[1] * 100), "% variance")) +
       ggplot2::ylab(paste0("PC2: ", round(percentVar[2] * 100), "% variance")) +
