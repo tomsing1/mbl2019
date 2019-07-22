@@ -32,7 +32,7 @@ mbl_plot_pca <- function(x, intgroup = NA, prior.count = 5, ntop = 500) {
       group,
       name = colnames(x))
     p <- ggplot2::ggplot(data = d,
-                         ggplot2:aes_string(x = "PC1", y = "PC2",
+                         ggplot2::aes_string(x = "PC1", y = "PC2",
                                             color = "group")) +
       ggplot2::geom_point(size = 3) +
       ggplot2::xlab(paste0("PC1: ", round(percentVar[1] * 100), "% variance")) +
