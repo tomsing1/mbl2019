@@ -8,6 +8,15 @@ from fish, fly and mouse samples
 - load the data into R for downstream analysis, e.g. differential expression
 analysis.
 
+Specifically, this document uses 
+[snakemake](https://snakemake.readthedocs.io/en/stable/)
+to coordinate an analysis workflow with the following steps:
+
+1. Quality control of raw FASTQ files with `FastQC`
+2. Adapter trimming with `skewer`
+3. Mapping of the trimmed reads to the transcriptome with `salmon`
+4. Collating a summary QC report with `multiqc`
+
 ## Before you start:
 
 QC reports for the first (pre-MBL) datasets are now available in our AWS S3
@@ -51,19 +60,19 @@ aws s3 cp s3://mbl.data/scripts/Snakefile ~/analysis/
 aws s3 sync s3://mbl.data/references ~/analysis/references
 ```
 
-### To process the *26* FASTQ files from the `fly` samples:
+##### To process the *26* FASTQ files from the `fly` samples:
 
 ```
 aws s3 sync s3://mbl.data/reads/mbl/fly ~/analysis/reads
 ```
 
-### To process the *120* FASTQ files from the `mouse` samples:
+##### To process the *120* FASTQ files from the `mouse` samples:
 
 ```
 aws s3 sync s3://mbl.data/reads/mbl/mouse ~/analysis/reads
 ```
 
-### To process the *67* FASTQ files from the `fish` samples:
+##### To process the *67* FASTQ files from the `fish` samples:
 
 ```
 aws s3 sync s3://mbl.data/reads/mbl/fish ~/analysis/reads
@@ -79,17 +88,6 @@ aws s3 sync s3://mbl.data/reads/mbl/fish ~/analysis/reads
 
 That's it - you are ready to process the new FASTQ files. Just follow
 the instructions in the next section.
-
-## Processing the RNA-seq data
-
-This document uses 
-[snakemake]()
-to coordinate an analysis workflow with the following steps:
-
-1. Quality control of raw FASTQ files with `FastQC`
-2. Adapter trimming with `skewer`
-3. Mapping of the trimmed reads to the transcriptome with `salmon`
-4. Collating a summary QC report with `multiqc`
 
 ## Prerequisites
 

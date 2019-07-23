@@ -31,14 +31,13 @@ packages.
 
 ```r
 if (!require("remotes", quietly = TRUE)) {
-  install.packages("devtools", quiet = TRUE)
+  install.packages("remotes", quiet = TRUE)
 }
-remotes::install_github("tomsing1/mbl2019", subdir = "rmbl2019",
-                        upgrade = FALSE)
+remotes::install_github("tomsing1/mbl2019", subdir = "rmbl2019", upgrade = FALSE)
 ```
 
 ```
-## Skipping install of 'rmbl2019' from a github remote, the SHA1 (6b16411f) has not changed since last install.
+## Skipping install of 'rmbl2019' from a github remote, the SHA1 (8307d652) has not changed since last install.
 ##   Use `force = TRUE` to force installation
 ```
 
@@ -48,13 +47,13 @@ remotes::install_github("tomsing1/mbl2019", subdir = "rmbl2019",
 
 By default, RStudio is configured to automatically reload the contents of your
 workspace into your R session each time. That can be quite confusing: old
-argument and results persist across sessions, and you might confuse them for
-your current outputs. 
+variables and result objects persist across sessions, and you might confuse
+them for your current outputs. 
 
 We recommend that you deactive this default behavior via the 
 `Tools -> Global options` menu, as shown below:
 
-1. Openthe `Global options` panel via the `Tools` menu:
+1. Open the `Global options` panel via the `Tools` menu:
 
 ![RStudio Global options](README_files/Rstudio_1.png)
 
@@ -72,7 +71,7 @@ Error: lazy-load database '/home/ubuntu/R/x86_64-pc-linux-gnu-library/3.6/rmbl20
 ```
 Don't worry, this simply means that you need to either:
 
-1) Unload the package and then attach it's new version instead:
+1) Unload the package and then attach its new version instead:
 
 ```r
 detach("package:rmbl2019", unload = TRUE)
@@ -87,7 +86,7 @@ library(rmbl2019)
 
 The `mbl_load_data` function downloads previously created
 [DGEList](https://www.rdocumentation.org/packages/edgeR/versions/3.14.0/topics/DGEList)
-objects with data from both data generated 
+objects with data from experiment performed either 
 - `pre_mbl`: before the MBL2019 started (fly, planaria, mouse and worm samples)
 - `mbl`: at the MBL2019 course, e.g. from samples collected by the course
 participants (fly, mouse and fish samples)
