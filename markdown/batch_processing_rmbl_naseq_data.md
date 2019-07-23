@@ -12,7 +12,7 @@ analysis.
 
 QC reports for the first (pre-MBL) datasets are now available in our AWS S3
 bucket
-[here]
+[here](https://s3.amazonaws.com/mbl.data/index.html)
 and
 you can always load the annotated counts as the DGEList into R via the
 [rmbl2019 R package](https://github.com/tomsing1/mbl2019/blob/master/rmbl2019/README.md).
@@ -26,8 +26,8 @@ switched off at the end of the Genomics section of the course - and **ALL** of
 the files and data on the servers will be deleted forever.
 
 
-1. Move any files you would like to keep our of the `analysis` folder in your
-home director to another location. (Even better: save them to your laptop via
+1. Move any files you would like to keep out of the `analysis` folder in your
+home directory to another location. (Even better: save them to your laptop via
 RStudio's `More -> Export` functionality.)
 
 2. Delete  *all* files and folders within your `analysis` directory. For
@@ -125,11 +125,18 @@ Start a dryrun of your workflow to see if things look ok:
 
 ```
 cd ~/analysis
-snakemake --cores 2
+snakemake --dryrun
 ```
 
-**Note:** Your server currently has `2 cores`, so you can use both of them for
-the analysis. 
+Snakemake will list the commands it intends to run, as well as their total
+number. Do you see what you expected? Great - then start the real processing
+run. Because your servers have two cores, you can use both of them by
+specifying the `--cores 2` argument:
+
+```
+cd ~/analysis
+snakemake --cores 2
+```
 
 Processing the files will take quite a while, so leave the screen by pressing
 the following key combinations, one after the other, to detach the screen:

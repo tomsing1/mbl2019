@@ -30,13 +30,54 @@ or
 [remotes](https://cran.r-project.org/web/packages/remotes/index.html)
 packages.
 
-```{r}
-if (!require("devtools", quietly = TRUE)) {
+```{r results='hide'}
+if (!require("remotes", quietly = TRUE)) {
   install.packages("devtools", quiet = TRUE)
 }
-library(devtools)
-install_github("tomsing1/mbl2019", subdir = "rmbl2019", upgrade = "never")
+remotes::install_github("tomsing1/mbl2019", subdir = "rmbl2019",
+                        upgrade = FALSE)
 ```
+
+## Troubleshooting
+
+### Preventing RStudio from restoring previous workspace
+
+By default, RStudio is configured to automatically reload the contents of your
+workspace into your R session each time. That can be quite confusing: old
+argument and results persist across sessions, and you might confuse them for
+your current outputs. 
+
+We recommend that you deactive this default behavior via the 
+`Tools -> Global options` menu, as shown below:
+
+1. Openthe `Global options` panel via the `Tools` menu:
+
+![RStudio Global options](README_files/Rstudio_1.png)
+
+2. Deactivate the `Restore .RData into workspace at startup` tickbox.
+
+![](README_files/Rstudio_2.png)
+
+### Corrupt lazy-load database
+
+If you try to update the package while it is already attached to your current
+R session, you might see the following error message:
+
+```
+Error: lazy-load database '/home/ubuntu/R/x86_64-pc-linux-gnu-library/3.6/rmbl2019/R/rmbl2019.rdb' is corrupt.
+```
+Don't worry, this simply means that you need to either:
+
+1) Unload the package and then attach it's new version instead:
+
+```r
+detach("package:rmbl2019", unload = TRUE)
+library(rmbl2019)
+```
+
+2) Alternatively, you can restart your R session via RStudio's
+`Session -> New Session` menu item.
+
 
 ## Useful functions
 
@@ -44,7 +85,8 @@ The `mbl_load_data` function downloads previously created
 [DGEList](https://www.rdocumentation.org/packages/edgeR/versions/3.14.0/topics/DGEList)
 objects with data from both data generated 
 - `pre_mbl`: before the MBL2019 started (fly, planaria, mouse and worm samples)
-- `mbl`: at the MBL2019 course, e.g. from samples collected by the course participants (fly, mouse and fish samples)
+- `mbl`: at the MBL2019 course, e.g. from samples collected by the course
+participants (fly, mouse and fish samples)
 
 ### Accessing pre-MBL datasets
 
@@ -57,12 +99,16 @@ library(rmbl2019)  # load the rmbl2019 package from your library
 mbl_load_data(organism = "mouse", dataset = "pre_mbl")  # retrieve a DGEList with mouse data from the pre-mbl batch
 ```
 
-To retrieve the second batch of data, e.g. generated from samples collected by the course participants, instead:
+### Accessing MBL datasets
+
+To retrieve the second batch of data, e.g. generated from samples collected by
+the course participants at MBL, you can specify the `dataset = "mbl"` 
+argument instead:
 
 ```{r}
 library(rmbl2019)  # load the rmbl2019 package from your library
   # retrieve a DGEList with mouse data from the pre-mbl batch
-mbl_load_data(organism = "mouse", dataset = "pre_mbl")
+mbl_load_data(organism = "mouse", dataset = "mbl")
 ```
 
 ### PCA plots
@@ -73,9 +119,9 @@ and returns a
 [ggplot2](https://ggplot2.tidyverse.org/)
 plot with the first two dimensions. 
 
-Any column available in the `$samples` slot of the `DGEList` can be used to color the points
-via the `intgroup` argument - as long as the argument matches the column name of an existing
-column in the `samples` table:
+Any column available in the `$samples` slot of the `DGEList` can be used to
+color the points via the `intgroup` argument - as long as the argument matches
+the column name of an existing column in the `samples` table:
 
 ```{r}
 library(rmbl2019)
@@ -83,8 +129,8 @@ x <- mbl_load_data(organism = "mouse", dataset = "pre_mbl")
 mbl_plot_pca(x, intgroup = "sex")
 ```
 
-By default, it considers the top 500 most variable genes (see the `ntop` argument).
-Please refer to the documentation for more details (e.g. `help(mbl_plot_pca)`).
+By default, it considers the top 500 most variable genes (see the `ntop`
+argument). Please refer to the documentation for more details (e.g. `help(mbl_plot_pca)`).
 
 ### Tidy CPMs
 
@@ -105,6 +151,23 @@ head(cpms)
 
 By default, the CPMs are log2 transformed after addition of one pseudocount. To 
 learn how to change these parameters, please check the function's help page:
-`r help(mbl_create_tidy_table)`.
+`help(mbl_create_tidy_table)`.
 
+The tidy `cpms` data.frame can now be passed to `ggplot2` (potentially after
+filtering) to plot the normalized expression of one or more genes of interest:
+
+```{r fig.width=5.5, fig.height=3.7}
+library(ggplot2)
+library(dplyr)
+cpms %>%
+  dplyr::filter(symbol %in% c("Gapdh", "Acta1")) %>%
+  ggplot(aes(x = sex, y = cpm, color = side)) +
+  geom_point() + 
+  facet_grid(symbol ~ cell_type, scales = "free_y") +
+  scale_color_manual(values = c(left = "firebrick", right = "navy"),
+                     na.value = "darkgrey", name = "Side") +
+  xlab("Sex") + 
+  ylab("Normalized expression\nlog2(CPM + 1)") +
+  theme_linedraw(base_size = 14)
+```
 
