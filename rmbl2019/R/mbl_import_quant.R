@@ -10,7 +10,7 @@
 #' @importFrom tximport tximport
 mbl_import_quantitation_results <- function(
   path = path.expand("~/analysis/quantitation"),
-  organism = c("mouse", "fly", "fish", "planaria", "worm"),
+  organism = c("mouse", "fly", "fish", "planaria", "worm", "mouse_mCherry"),
   dataset = c("mbl", "pre_mbl"),
   rm.description = TRUE) {
   # Ensure user asked for a valid organism

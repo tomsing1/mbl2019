@@ -6,7 +6,7 @@
 #' @importFrom readr read_tsv cols
 #' @return transcript level annotations
 mbl_get_transcript_annotation <- function(
-  organism = c("mouse", "fly", "fish", "planaria", "worm")) {
+  organism = c("mouse", "fly", "fish", "planaria", "worm", "mouse_mCherry")) {
   organism <- match.arg(organism)
 
   url <-paste0("https://s3.amazonaws.com/mbl.data/references/%s/",
