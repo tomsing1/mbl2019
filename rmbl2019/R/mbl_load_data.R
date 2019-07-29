@@ -6,13 +6,13 @@
 #' @importFrom janitor remove_empty
 #' @return a DGElist object
 mbl_load_data <- function(
-  organism = c("mouse", "fly", "fish", "planaria", "worm"),
+  organism = c("mouse", "fly", "fish", "planaria", "worm", "mouse_mCherry"),
   dataset = c("pre_mbl", "mbl")) {
   organism <- match.arg(organism)
   dataset <- match.arg(dataset)
-  if (organism == "fish" & dataset == "pre_mbl") {
+  if (organism %in% c("fish", "mouse_mCherry") & dataset == "pre_mbl") {
     stop(paste(
-      'Planarian data was not generated before the course at MBL!',
+      'This data was not generated before the course at MBL!',
       'Maybe you need to use dataset = "mbl"?'))
   }
   if (organism == "planaria" & dataset == "mbl") {
